@@ -1,0 +1,10 @@
+---
+
+- name: subscribe to AWS Config
+  command: |
+    aws configservice subscribe
+                      --iam-role arn:aws:iam::{{ account }}:role/aws-config
+                      --region '{{ region }}'
+                      --s3-bucket '{{ awslogs_bucket }}'
+                      --sns-topic aws-config
+                      --profile '{{ profile }}'
