@@ -1,7 +1,7 @@
 ---
 
 - name: subscribe to AWS Config
-  command: |
+  command: >
     aws configservice subscribe
                       --iam-role arn:aws:iam::{{ account }}:role/aws-config
                       --region '{{ region }}'
