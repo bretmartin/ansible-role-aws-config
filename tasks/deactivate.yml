@@ -25,6 +25,14 @@
                         --region {{ config_region }}
                         --profile {{ profile }}
 
+  - name: 'delete SNS topic in {{ config_region }}'
+    command: >
+      aws sns delete-topic
+              --topic-arn 'arn:aws:sns:{{
+                             config_region }}:{{ account }}:aws-config'
+              --region '{{ config_region }}'
+              --profile '{{ profile }}'
+
   - name: call optional notifier
     include: 'roles/{{ notifier_role }}/tasks/main.yml'
     vars:

@@ -11,6 +11,13 @@
 
 - block:
 
+  - name: 'create SNS topic in {{ config_region }}'
+    command: >
+      aws sns create-topic
+              --name aws-config
+              --region '{{ config_region }}'
+              --profile '{{ profile }}'
+
   - name: 'subscribe to AWS Config in {{ config_region }}'
     command: >
       aws configservice subscribe
