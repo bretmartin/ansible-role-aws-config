@@ -24,7 +24,7 @@
     include: 'roles/{{ notifier_role }}/tasks/main.yml'
     vars:
       message: >
-        configured AWS Config in
+        enabled <b>AWS Config</b> in
         <a href="{{ config_url }}?region={{ config_region }}">{{
           config_region }} in account {{ profile }}</a>
     when: notifier_role is defined
