@@ -1,5 +1,17 @@
 ---
 
+- name: set global facts
+  set_fact:
+    config_url: 'https://console.aws.amazon.com/config/home'
+
+- name: call optional notifier
+  include: 'roles/{{ notifier_role }}/tasks/main.yml'
+  vars:
+    message: >
+      started running role <b>aws-config</b>
+      on <a href="{{ config_url }}">account {{ profile }}</a>
+  when: notifier_role is defined
+
 - name: subscribe to AWS Config
   command: >
     aws configservice subscribe
@@ -8,3 +20,11 @@
                       --s3-bucket '{{ awslogs_bucket }}'
                       --sns-topic aws-config
                       --profile '{{ profile }}'
+
+- name: call optional notifier
+  include: 'roles/{{ notifier_role }}/tasks/main.yml'
+  vars:
+    message: >
+      started running role <b>aws-config</b>
+      on <a href="{{ config_url }}">account {{ profile }}</a>
+  when: notifier_role is defined
