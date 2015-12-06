@@ -12,14 +12,17 @@
       on <a href="{{ config_url }}">account {{ profile }}</a>
   when: notifier_role is defined
 
-- name: subscribe to AWS Config
-  command: >
-    aws configservice subscribe
-                      --iam-role arn:aws:iam::{{ account }}:role/aws-config
-                      --region '{{ region }}'
-                      --s3-bucket '{{ awslogs_bucket }}'
-                      --sns-topic aws-config
-                      --profile '{{ profile }}'
+- include: regions.yml
+
+- include: activate.yml
+  vars:
+    config_region: '{{ item }}'
+  with_items: active_regions
+
+- include: deactivate.yml
+  vars:
+    config_region: '{{ item }}'
+  with_items: inactive_regions
 
 - name: call optional notifier
   include: 'roles/{{ notifier_role }}/tasks/main.yml'

@@ -1,0 +1,37 @@
+---
+
+- name: 'check status of AWS Config in {{ config_region }}'
+  command: >
+    aws configservice get-status
+                      --region '{{ config_region }}'
+                      --profile '{{ profile }}'
+  register: config_status
+  changed_when: False
+
+
+- block:
+
+  - name: 'stop Config configuration recorders in {{ config_region }}'
+    command: >
+      aws configservice stop-configuration-recorder
+                        --configuration-recorder-name default
+                        --region {{ config_region }}
+                        --profile {{ profile }}
+
+  - name: 'delete Config delivery channels in {{ config_region }}'
+    command: >
+      aws configservice delete-delivery-channel
+                        --delivery-channel-name default
+                        --region {{ config_region }}
+                        --profile {{ profile }}
+
+  - name: call optional notifier
+    include: 'roles/{{ notifier_role }}/tasks/main.yml'
+    vars:
+      message: >
+        deprovisioned AWS Config in
+        <a href="{{ config_url }}?region={{ config_region }}">{{
+          config_region }} in account {{ profile }}</a>
+    when: notifier_role is defined
+
+  when: '"recorder: ON" in config_status.stdout_lines'

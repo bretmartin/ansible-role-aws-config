@@ -1,0 +1,29 @@
+---
+
+- name: list all AWS regions
+  command: >
+    aws ec2 describe-regions
+            --query 'Regions[*].RegionName'
+            --profile '{{ profile }}'
+  register: all_regions
+  changed_when: False
+
+- name: set all AWS regions fact
+  set_fact:
+    all_regions: '{{ all_regions.stdout | from_json }}'
+
+- name: set configured AWS regions fact
+  set_fact:
+    configured_regions: >
+      {% if config_regions == 'ALL' -%}
+      {{ all_regions }}
+      {% elif config_regions == 'NONE' -%}
+      {{ [] }}
+      {% else -%}
+      {{ config_regions }}
+      {% endif -%}
+
+- name: set added and removed AWS regions fact
+  set_fact:
+    active_regions: '{{ configured_regions }}'
+    inactive_regions: '{{ all_regions | difference(configured_regions) }}'
