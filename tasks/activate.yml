@@ -24,7 +24,7 @@
                         --iam-role
                           'arn:aws:iam::{{ aws_account }}:role/aws-config'
                         --region '{{ config_region }}'
-                        --s3-bucket '{{ awslogs_bucket }}'
+                        --s3-bucket '{{ aws_awslogs_bucket }}'
                         --sns-topic aws-config
                         --profile '{{ aws_profile }}'
 
