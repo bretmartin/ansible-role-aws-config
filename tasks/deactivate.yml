@@ -5,7 +5,7 @@
     aws configservice get-status
                       --region '{{ config_region }}'
                       --profile '{{ aws_profile }}'
-  register: config_status
+  register: _aws_config_status
   changed_when: False
 
 
@@ -38,8 +38,8 @@
     vars:
       message: >
         disabled <b>AWS Config</b> in
-        <a href="{{ config_url }}?region={{ config_region }}">{{
+        <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
           config_region }} in account {{ aws_profile }}</a>
     when: notifier_role is defined
 
-  when: '"recorder: ON" in config_status.stdout_lines'
+  when: '"recorder: ON" in _aws_config_status.stdout_lines'

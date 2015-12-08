@@ -2,14 +2,14 @@
 
 - name: set global facts
   set_fact:
-    config_url: 'https://console.aws.amazon.com/config/home'
+    _aws_config_url: 'https://console.aws.amazon.com/config/home'
 
 - name: call optional notifier
   include: 'roles/{{ notifier_role }}/tasks/main.yml'
   vars:
     message: >
       started running role <b>aws-config</b>
-      on <a href="{{ config_url }}">account {{ aws_profile }}</a>
+      on <a href="{{ _aws_config_url }}">account {{ aws_profile }}</a>
   when: notifier_role is defined
 
 - include: regions.yml
@@ -17,17 +17,17 @@
 - include: activate.yml
   vars:
     config_region: '{{ item }}'
-  with_items: active_regions
+  with_items: _aws_config_active_regions
 
 - include: deactivate.yml
   vars:
     config_region: '{{ item }}'
-  with_items: inactive_regions
+  with_items: _aws_config_inactive_regions
 
 - name: call optional notifier
   include: 'roles/{{ notifier_role }}/tasks/main.yml'
   vars:
     message: >
       finished running role <b>aws-config</b>
-      on <a href="{{ config_url }}">account {{ aws_profile }}</a>
+      on <a href="{{ _aws_config_url }}">account {{ aws_profile }}</a>
   when: notifier_role is defined
