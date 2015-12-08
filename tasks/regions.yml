@@ -4,7 +4,7 @@
   command: >
     aws ec2 describe-regions
             --query 'Regions[*].RegionName'
-            --profile '{{ profile }}'
+            --profile '{{ aws_profile }}'
   register: all_regions
   changed_when: False
 
