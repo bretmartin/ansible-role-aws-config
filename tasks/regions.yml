@@ -15,12 +15,12 @@
 - name: set configured AWS regions fact
   set_fact:
     configured_regions: >
-      {% if config_regions == 'ALL' -%}
+      {% if aws_config_regions == 'ALL' -%}
       {{ all_regions }}
-      {% elif config_regions == 'NONE' -%}
+      {% elif aws_config_regions == 'NONE' -%}
       {{ [] }}
       {% else -%}
-      {{ config_regions }}
+      {{ aws_config_regions }}
       {% endif -%}
 
 - name: set added and removed AWS regions fact
