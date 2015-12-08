@@ -11,30 +11,30 @@
 
 - block:
 
-  - name: 'create SNS topic in {{ config_region }}'
-    command: >
-      aws sns create-topic
-              --name aws-config
-              --region '{{ config_region }}'
-              --profile '{{ aws_profile }}'
+    - name: 'create SNS topic in {{ config_region }}'
+      command: >
+        aws sns create-topic
+                --name aws-config
+                --region '{{ config_region }}'
+                --profile '{{ aws_profile }}'
 
-  - name: 'subscribe to AWS Config in {{ config_region }}'
-    command: >
-      aws configservice subscribe
-                        --iam-role
-                          'arn:aws:iam::{{ aws_account }}:role/aws-config'
-                        --region '{{ config_region }}'
-                        --s3-bucket '{{ aws_awslogs_bucket }}'
-                        --sns-topic aws-config
-                        --profile '{{ aws_profile }}'
+    - name: 'subscribe to AWS Config in {{ config_region }}'
+      command: >
+        aws configservice subscribe
+                          --iam-role
+                            'arn:aws:iam::{{ aws_account }}:role/aws-config'
+                          --region '{{ config_region }}'
+                          --s3-bucket '{{ aws_awslogs_bucket }}'
+                          --sns-topic aws-config
+                          --profile '{{ aws_profile }}'
 
-  - name: call optional notifier
-    include: 'roles/{{ notifier_role }}/tasks/main.yml'
-    vars:
-      message: >
-        enabled <b>AWS Config</b> in
-        <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
-          config_region }} in account {{ aws_profile }}</a>
-    when: notifier_role is defined
+    - name: call optional notifier
+      include: 'roles/{{ notifier_role }}/tasks/main.yml'
+      vars:
+        message: >
+          enabled <b>AWS Config</b> in
+          <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
+            config_region }} in account {{ aws_profile }}</a>
+      when: notifier_role is defined
 
   when: '"recorder: ON" not in _aws_config_status.stdout_lines'
