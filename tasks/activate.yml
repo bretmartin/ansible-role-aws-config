@@ -21,7 +21,8 @@
   - name: 'subscribe to AWS Config in {{ config_region }}'
     command: >
       aws configservice subscribe
-                        --iam-role arn:aws:iam::{{ account }}:role/aws-config
+                        --iam-role
+                          'arn:aws:iam::{{ aws_account }}:role/aws-config'
                         --region '{{ config_region }}'
                         --s3-bucket '{{ awslogs_bucket }}'
                         --sns-topic aws-config

@@ -28,8 +28,8 @@
   - name: 'delete SNS topic in {{ config_region }}'
     command: >
       aws sns delete-topic
-              --topic-arn 'arn:aws:sns:{{
-                             config_region }}:{{ account }}:aws-config'
+              --topic-arn
+                'arn:aws:sns:{{ config_region }}:{{ aws_account }}:aws-config'
               --region '{{ config_region }}'
               --profile '{{ aws_profile }}'
 
