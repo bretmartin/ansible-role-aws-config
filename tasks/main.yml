@@ -17,12 +17,12 @@
 - include: activate.yml
   vars:
     config_region: '{{ item }}'
-  with_items: _aws_config_active_regions
+  with_items: '{{ _aws_config_active_regions }}'
 
 - include: deactivate.yml
   vars:
     config_region: '{{ item }}'
-  with_items: _aws_config_inactive_regions
+  with_items: '{{ _aws_config_inactive_regions }}'
 
 - name: call optional notifier
   include: 'roles/{{ notifier_role }}/tasks/main.yml'
