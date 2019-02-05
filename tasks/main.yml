@@ -5,7 +5,8 @@
     _aws_config_url: 'https://console.aws.amazon.com/config/home'
 
 - name: call optional notifier
-  include_tasks: 'roles/{{ notifier_role }}/tasks/main.yml'
+  include_role:
+    name: '{{ notifier_role }}'
   vars:
     message: >
       started running role <b>aws-config</b>
@@ -25,7 +26,8 @@
   with_items: '{{ _aws_config_inactive_regions }}'
 
 - name: call optional notifier
-  include_tasks: 'roles/{{ notifier_role }}/tasks/main.yml'
+  include_role:
+    name: '{{ notifier_role }}'
   vars:
     message: >
       finished running role <b>aws-config</b>
