@@ -1,17 +1,18 @@
 ---
 
 - name: list all AWS regions
-  command: >
-    aws ec2 describe-regions
-            --query 'Regions[*].RegionName'
-            --profile '{{ aws_profile }}'
-  register: _aws_config_all_regions
-  changed_when: False
+  aws_region_facts:
+    profile: '{{ aws_profile }}'
+  register: _aws_config_region_facts
 
 - name: set all AWS regions fact
   set_fact:
     _aws_config_all_regions: >
-      {{ _aws_config_all_regions.stdout | from_json }}
+      {{
+        _aws_config_region_facts.regions
+        | json_query("[*].region_name")
+        | sort
+      }}
 
 - name: set configured AWS regions fact
   set_fact:
