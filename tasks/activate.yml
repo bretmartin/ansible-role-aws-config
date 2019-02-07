@@ -1,41 +1,65 @@
 ---
 
-- name: 'check status of AWS Config in {{ config_region }}'
+- name: 'create SNS topic in {{ config_region }}'
+  sns_topic:
+    name: aws-config
+    profile: '{{ aws_profile }}'
+    region: '{{ config_region }}'
+    state: present
+  register: _aws_config_sns_topic
+
+- name: 'create AWS Config recorder in {{ config_region }}'
+  aws_config_recorder:
+    name: default
+    profile: '{{ aws_profile }}'
+    recording_group:
+      all_supported: true
+    region: '{{ config_region }}'
+    role_arn: arn:aws:iam::{{ aws_account }}:role/aws-config
+    state: present
+  changed_when: false
+  register: _aws_config_recorder
+
+- name: 'create AWS Config delivery channel in {{ config_region }}'
+  aws_config_delivery_channel:
+    delivery_frequency: >-
+      {{ aws_config_delivery_frequency | default("One_Hour") }}
+    name: default
+    profile: '{{ aws_profile }}'
+    region: '{{ config_region }}'
+    s3_bucket: '{{ aws_awslogs_bucket }}'
+    sns_topic_arn: '{{ _aws_config_sns_topic.sns_arn }}'
+    state: present
+  register: _aws_config_delivery_channel
+
+- name: 'check AWS Config recorder status in {{ config_region }}'
   command: >
-    aws configservice get-status
-                      --region '{{ config_region }}'
+    aws configservice describe-configuration-recorder-status
+                      --configuration-recorder-names default
+                      --query 'ConfigurationRecordersStatus[0].recording'
                       --profile '{{ aws_profile }}'
-  register: _aws_config_status
-  changed_when: False
+                      --region '{{ config_region }}'
+  changed_when: false
+  register: _aws_config_recorder_status_command
 
+- name: 'start AWS Config recorder in {{ config_region }}'
+  command: >
+    aws configservice start-configuration-recorder
+                      --configuration-recorder-name default
+                      --profile '{{ aws_profile }}'
+                      --region '{{ config_region }}'
+  when: _aws_config_recorder_status_command.stdout != 'true'
 
-- block:
-
-    - name: 'create SNS topic in {{ config_region }}'
-      sns_topic:
-        name: aws-config
-        profile: '{{ aws_profile }}'
-        region: '{{ config_region }}'
-        state: present
-
-    - name: 'subscribe to AWS Config in {{ config_region }}'
-      command: >
-        aws configservice subscribe
-                          --iam-role
-                            'arn:aws:iam::{{ aws_account }}:role/aws-config'
-                          --region '{{ config_region }}'
-                          --s3-bucket '{{ aws_awslogs_bucket }}'
-                          --sns-topic aws-config
-                          --profile '{{ aws_profile }}'
-
-    - name: call optional notifier
-      include_role:
-        name: '{{ notifier_role }}'
-      vars:
-        message: >
-          enabled <b>AWS Config</b> in
-          <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
-            config_region }} in account {{ aws_profile }}</a>
-      when: notifier_role is defined
-
-  when: '"recorder: ON" not in _aws_config_status.stdout_lines'
+- name: call optional notifier
+  include_role:
+    name: '{{ notifier_role }}'
+  vars:
+    message: >
+      enabled <b>AWS Config</b> in
+      <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
+        config_region }} in account {{ aws_profile }}</a>
+  when: >
+    notifier_role is defined and
+    (_aws_config_sns_topic               is changed or
+     _aws_config_delivery_channel        is changed or
+     _aws_config_recorder_status_command is changed)
