@@ -14,6 +14,8 @@
     profile: '{{ aws_profile }}'
     recording_group:
       all_supported: true
+      include_global_types: >-
+        {{ config_region == aws_config_global_resources_region }}
     region: '{{ config_region }}'
     role_arn: arn:aws:iam::{{ aws_account }}:role/aws-config
     state: present
