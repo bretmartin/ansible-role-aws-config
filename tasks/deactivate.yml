@@ -1,46 +1,40 @@
 ---
 
-- name: 'check status of AWS Config in {{ config_region }}'
-  command: >
-    aws configservice get-status
-                      --region '{{ config_region }}'
-                      --profile '{{ aws_profile }}'
-  register: _aws_config_status
-  changed_when: False
+- name: 'delete AWS Config recorder in {{ config_region }}'
+  aws_config_recorder:
+    name: default
+    profile: '{{ aws_profile }}'
+    region: '{{ config_region }}'
+    state: absent
+  register: _aws_config_recorder
 
+- name: 'delete AWS Config delivery channel in {{ config_region }}'
+  aws_config_delivery_channel:
+    name: default
+    profile: '{{ aws_profile }}'
+    region: '{{ config_region }}'
+    s3_bucket: '{{ aws_awslogs_bucket }}'
+    state: absent
+  register: _aws_config_delivery_channel
 
-- block:
+- name: 'delete SNS topic in {{ config_region }}'
+  sns_topic:
+    name: aws-config
+    profile: '{{ aws_profile }}'
+    region: '{{ config_region }}'
+    state: absent
+  register: _aws_config_sns_topic
 
-    - name: 'stop Config configuration recorders in {{ config_region }}'
-      command: >
-        aws configservice stop-configuration-recorder
-                          --configuration-recorder-name default
-                          --region {{ config_region }}
-                          --profile {{ aws_profile }}
-
-    - name: 'delete Config delivery channels in {{ config_region }}'
-      command: >
-        aws configservice delete-delivery-channel
-                          --delivery-channel-name default
-                          --region {{ config_region }}
-                          --profile {{ aws_profile }}
-
-    - name: 'delete SNS topic in {{ config_region }}'
-      command: >
-        aws sns delete-topic
-                --topic-arn
-                  'arn:aws:sns:{{ config_region }}:{{ aws_account }}:aws-config'
-                --region '{{ config_region }}'
-                --profile '{{ aws_profile }}'
-
-    - name: call optional notifier
-      include_role:
-        name: '{{ notifier_role }}'
-      vars:
-        message: >
-          disabled <b>AWS Config</b> in
-          <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
-            config_region }} in account {{ aws_profile }}</a>
-      when: notifier_role is defined
-
-  when: '"recorder: ON" in _aws_config_status.stdout_lines'
+- name: call optional notifier
+  include_role:
+    name: '{{ notifier_role }}'
+  vars:
+    message: >
+      disabled <b>AWS Config</b> in
+      <a href="{{ _aws_config_url }}?region={{ config_region }}">{{
+        config_region }} in account {{ aws_profile }}</a>
+  when: >
+    notifier_role is defined and
+    (_aws_config_recorder         is changed or
+     _aws_config_delivery_channel is changed or
+     _aws_config_sns_topic        is changed)
