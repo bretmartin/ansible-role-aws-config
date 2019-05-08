@@ -7,7 +7,7 @@
 
 - name: set all AWS regions fact
   set_fact:
-    _aws_config_all_regions: >
+    _aws_config_all_regions: >-
       {{
         _aws_config_region_facts.regions
         | json_query("[*].region_name")
@@ -16,18 +16,18 @@
 
 - name: set configured AWS regions fact
   set_fact:
-    _aws_config_configured_regions: >
+    _aws_config_configured_regions: >-
       {% if aws_config_regions == 'ALL' -%}
       {{ _aws_config_all_regions }}
       {% elif aws_config_regions == 'NONE' -%}
       {{ [] }}
       {% else -%}
       {{ aws_config_regions }}
-      {% endif -%}
+      {%- endif -%}
 
 - name: set added and removed AWS regions fact
   set_fact:
-    _aws_config_active_regions: >
+    _aws_config_active_regions: >-
       {{ _aws_config_configured_regions }}
-    _aws_config_inactive_regions: >
+    _aws_config_inactive_regions: >-
       {{ _aws_config_all_regions | difference(_aws_config_configured_regions) }}
