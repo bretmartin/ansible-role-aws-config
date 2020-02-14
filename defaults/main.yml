@@ -1,3 +1,3 @@
 ---
-
+aws_config_regions: ALL
 aws_config_global_resources_region: '{{ aws_region }}'
